@@ -31,6 +31,25 @@ def wait_for_confirmation( algod_client, txid ):
             algod_client.status_after_block(algod_client.status().get('lastRound') +1)
     return txinfo
 
+
+def print_ipi_records(account):
+    account_info = acl.account_info(account)
+    for asset in account_info["assets"]:
+        print("\n------------------------------------------------\n\n")
+        print(json.dumps(account_info["thisassettotal"][asset], indent=4))
+        if int(asset_id_ipi) == int(asset):
+            continue
+        elif "metadatahash" not in account_info["thisassettotal"][asset].keys():
+            print("\nWhole World")
+        else:
+            char_vector = base64.b64decode(ipi_record["metadatahash"]).decode()
+            res = "\n"+vectortocountry(country_list, char_vector)
+            if ("ZW" in ipi_record["url"]):
+                res += ",ZW"
+            print(res)
+        print(account_info["assets"][asset]["amount"])
+        print("------------------------------------------------\n\n")
+
 def setup_acl():
     # recover a account  
     private_key, account = account_algosdk.generate_account()
@@ -144,7 +163,43 @@ def create_succint_ipi_record(IPI_id, cc, rl, rh, from_date, to_date, share, ter
 
     asset_info = acl.asset_info(asset_id)
     print(json.dumps(asset_info, indent=4))
-    return asset_info
+    return asset_id
+
+def transfer_ipi(asset_id, to_account, account, private_key, opt_in=False) : # how do I pass territory string
+
+    # get suggested parameters
+    params = acl.suggested_params()
+    gen = params["genesisID"]
+    gh = params["genesishashb64"]
+    last_round = params["lastRound"]
+    fee = params["fee"]
+
+    input("Press smt when you have fill {0}".format(account))
+
+    # create transaction2
+    # Configure fields for creating the asset.
+    # send 10 
+    data = {
+        "sender": account,
+        "fee": fee,
+        "first": last_round,
+        "last": last_round+100,
+        "gh": gh,
+        "receiver": to_account,
+        "amt": 1 if opt_in==False else 0,
+        "index": asset_id,
+        "flat_fee": True
+    }
+    print("Asset Transfer")
+    txn = transaction.AssetTransferTxn(**data)
+    stxn = txn.sign(private_key)
+    txid = acl.send_transaction(stxn, headers={'content-type': 'application/x-binary'})
+    print(txid)
+
+    # wait for confirmation
+    txinfo = wait_for_confirmation( acl, txid) 
+
+    # todo add asset_id return
 
 
 
@@ -162,17 +217,14 @@ asset_info_ipi = acl.asset_info(asset_id_ipi)
 print(json.dumps(asset_info_ipi, indent=4))
 
 # create ipi record
-ipi_record = create_succint_ipi_record(asset_info_ipi["unitname"], cclasses_list[0], roles_list[0], rights_list[0], "2000", "2050", 100, ["WO"], account, private_key)
+ipi_record_id = create_succint_ipi_record(asset_info_ipi["unitname"], cclasses_list[0], roles_list[0], rights_list[0], "2000", "2050", 100, ["WO"], account, private_key)
 
-if "metadatahash" not in ipi_record.keys():
-    print("Whole World")
-else:
-    char_vector = base64.b64decode(ipi_record["metadatahash"]).decode()
-    res = vectortocountry(country_list, char_vector)
-    if ("ZW" in ipi_record["url"]):
-        res += ",ZW"
-    print(res)
+print_ipi_records(account)
 
-# # todo per PoC:
-# * vedi account balance e printa le scelte
-# * gestisci __main__ e sys.argv elaborato per gestire i record
+# optin cmo
+transfer_ipi(ipi_record_id, cmo_account, cmo_account, cmo_private_key, opt_in=True)
+
+# transfer to cmo
+transfer_ipi(ipi_record_id, cmo_account, account, private_key)
+
+print_ipi_records(cmo_account)
