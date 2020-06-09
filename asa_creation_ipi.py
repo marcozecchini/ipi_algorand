@@ -32,14 +32,15 @@ def wait_for_confirmation( algod_client, txid ):
     return txinfo
 
 
-def print_ipi_records(account):
+def print_ipi_records(account, asset_id_ipi): # todo modifica con stampa di json come in documento
     account_info = acl.account_info(account)
     for asset in account_info["assets"]:
-        print("\n------------------------------------------------\n\n")
-        print(json.dumps(account_info["thisassettotal"][asset], indent=4))
+        print("\n------------------------------------------------")
+        ipi_record = acl.asset_info(int(asset))
+        print(json.dumps(ipi_record, indent=4))
         if int(asset_id_ipi) == int(asset):
             continue
-        elif "metadatahash" not in account_info["thisassettotal"][asset].keys():
+        elif "metadatahash" not in ipi_record.keys():
             print("\nWhole World")
         else:
             char_vector = base64.b64decode(ipi_record["metadatahash"]).decode()
@@ -47,8 +48,12 @@ def print_ipi_records(account):
             if ("ZW" in ipi_record["url"]):
                 res += ",ZW"
             print(res)
-        print(account_info["assets"][asset]["amount"])
-        print("------------------------------------------------\n\n")
+        print("Amount: {0}".format(account_info["assets"][asset]["amount"]))
+        print("------------------------------------------------\n")
+
+def print_created_assets(account):
+    account_info = acl.account_info(account)
+    print(json.dumps(account_info["thisassettotal"], indent=4))
 
 def setup_acl():
     # recover a account  
@@ -100,7 +105,7 @@ def create_ipi_name(account, private_key):
     # send them over network
     sent = acl.send_transaction(stxn)
     # print txid
-    print(sent)
+    # print(sent)
 
     # wait for confirmation
     txinfo = wait_for_confirmation( acl, sent) 
@@ -155,14 +160,14 @@ def create_succint_ipi_record(IPI_id, cc, rl, rh, from_date, to_date, share, ter
     # send them over network
     sent = acl.send_transaction(stxn)
     # print txid
-    print(sent)
+    # print(sent)
 
     # wait for confirmation
     txinfo = wait_for_confirmation( acl, sent) 
     asset_id = txinfo["txresults"]["createdasset"]
 
     asset_info = acl.asset_info(asset_id)
-    print(json.dumps(asset_info, indent=4))
+    # print(json.dumps(asset_info, indent=4))
     return asset_id
 
 def transfer_ipi(asset_id, to_account, account, private_key, opt_in=False) : # how do I pass territory string
@@ -214,17 +219,26 @@ print("Rh passphrase: {}".format(mnemonic.from_private_key(private_key)))
 # create IPI names & identifier
 asset_id_ipi = create_ipi_name(account, private_key)
 asset_info_ipi = acl.asset_info(asset_id_ipi)
-print(json.dumps(asset_info_ipi, indent=4))
+# print(json.dumps(asset_info_ipi, indent=4))
 
 # create ipi record
 ipi_record_id = create_succint_ipi_record(asset_info_ipi["unitname"], cclasses_list[0], roles_list[0], rights_list[0], "2000", "2050", 100, ["WO"], account, private_key)
+ipi_record_id2 = create_succint_ipi_record(asset_info_ipi["unitname"], cclasses_list[1], roles_list[1], rights_list[1], "2000", "2050", 100, ["IT"], account, private_key)
 
-print_ipi_records(account)
+print_ipi_records(account, asset_id_ipi)
 
-# optin cmo
+# record 1
+## optin cmo
 transfer_ipi(ipi_record_id, cmo_account, cmo_account, cmo_private_key, opt_in=True)
 
-# transfer to cmo
+## transfer to cmo
 transfer_ipi(ipi_record_id, cmo_account, account, private_key)
 
-print_ipi_records(cmo_account)
+# record 2
+## optin cmo
+transfer_ipi(ipi_record_id2, cmo_account, cmo_account, cmo_private_key, opt_in=True)
+
+## transfer to cmo
+transfer_ipi(ipi_record_id2, cmo_account, account, private_key)
+
+print_ipi_records(cmo_account, asset_id_ipi)
