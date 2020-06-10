@@ -4,6 +4,7 @@ import time
 import base64
 import os
 from encode import *
+from util import *
 from algosdk import algod
 from algosdk import mnemonic
 from algosdk import transaction
@@ -32,41 +33,19 @@ def wait_for_confirmation( algod_client, txid ):
     return txinfo
 
 
-def print_ipi_records(account, asset_id_ipi): # todo modifica con stampa di json come in documento
-    account_info = acl.account_info(account)
-    for asset in account_info["assets"]:
-        print("\n------------------------------------------------")
-        ipi_record = acl.asset_info(int(asset))
-        print(json.dumps(ipi_record, indent=4))
-        if int(asset_id_ipi) == int(asset):
-            continue
-        elif "metadatahash" not in ipi_record.keys():
-            print("\nWhole World")
-        else:
-            char_vector = base64.b64decode(ipi_record["metadatahash"]).decode()
-            res = "\n"+vectortocountry(country_list, char_vector)
-            if ("ZW" in ipi_record["url"]):
-                res += ",ZW"
-            print(res)
-        print("Amount: {0}".format(account_info["assets"][asset]["amount"]))
-        print("------------------------------------------------\n")
-
-def print_created_assets(account):
-    account_info = acl.account_info(account)
-    print(json.dumps(account_info["thisassettotal"], indent=4))
-
 def setup_acl():
-    # recover a account  
+    # connect to node
+    acl = connect_to_network()
+    return acl
+
+def setup_cmo():
     private_key, account = account_algosdk.generate_account()
     # passphrase1 = "faint fog unfair treat enemy disagree host merit bulb lizard client proof aspect cruise vital lion gate victory planet grace weird food phrase absent marriage"
     # private_key = mnemonic.to_private_key(passphrase1)
     # account = account_algosdk.address_from_private_key(private_key)
     print("CMO address: {}".format(account))
     print("CMO passphrase: {}".format(mnemonic.from_private_key(private_key)))
-
-    # connect to node
-    acl = connect_to_network()
-    return acl, account, private_key
+    return  account, private_key
 
 def create_ipi_name(account, private_key):
     # get suggested parameters
@@ -86,15 +65,16 @@ def create_ipi_name(account, private_key):
         "first": last_round,
         "last": last_round+100,
         "gh": gh,
-        "total": 1, # (1 / share)*100 = total 
+        "total": 1,  
         "decimals": 0,
         "default_frozen": False,
-        "unit_name": "MarioRos", # CC, RL, RH
-        "asset_name": "I-001450581-6;41161231;N", # IP - base/name number?  - 32 bytes
+        "unit_name": "41161231", # ipi_name_number
+        "asset_name": "IPI:I-001450581-6;N;PA", # IPI:<ipi_base_number>;<IPI_type>;<name_type> - base/name number?  - 32 bytes
         "manager": account,
         "reserve": account,
         "freeze": account,
         "clawback": account,
+        "url": "Mario Rossi", # IPI_name
         "flat_fee": True
     }
     txn = transaction.AssetConfigTxn(**data)
@@ -207,9 +187,12 @@ def transfer_ipi(asset_id, to_account, account, private_key, opt_in=False) : # h
     # todo add asset_id return
 
 
+acl = setup_acl()
 
-# create cmo account  
-acl, cmo_account, cmo_private_key = setup_acl()
+# create cmo account 
+cmo_account, cmo_private_key = setup_cmo()
+cmo_list = [cmo_account]
+
 
 # create rightholder account
 private_key, account = account_algosdk.generate_account()
@@ -225,7 +208,7 @@ asset_info_ipi = acl.asset_info(asset_id_ipi)
 ipi_record_id = create_succint_ipi_record(asset_info_ipi["unitname"], cclasses_list[0], roles_list[0], rights_list[0], "2000", "2050", 100, ["WO"], account, private_key)
 ipi_record_id2 = create_succint_ipi_record(asset_info_ipi["unitname"], cclasses_list[1], roles_list[1], rights_list[1], "2000", "2050", 100, ["IT"], account, private_key)
 
-print_ipi_records(account, asset_id_ipi)
+print_ipi_on_chain_structure(acl, account, asset_id_ipi)
 
 # record 1
 ## optin cmo
@@ -241,4 +224,4 @@ transfer_ipi(ipi_record_id2, cmo_account, cmo_account, cmo_private_key, opt_in=T
 ## transfer to cmo
 transfer_ipi(ipi_record_id2, cmo_account, account, private_key)
 
-print_ipi_records(cmo_account, asset_id_ipi)
+print_ipi_records(acl, cmo_list, account)
