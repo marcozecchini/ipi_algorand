@@ -1,6 +1,26 @@
 # IPI record on Algorand standard asset
 
 ## Assets based from Right holder to CMO
+
+### To insert a new row in the IPI
+
+* Right holder install an App
+* The App generates a couple Sk,Pk of secret and public keys
+* A unique IPI number is associated to Sk,Pk by a suitable verifiable claim in a Self-Sovereign Identity perspective
+* A CMO is an entity in the chain with its own  Sk_CMO,Pk_CMO
+* Through the App, users can fill-up all the necessary fields to register an entity in the IPI. All this information is stored in a private space and signed by the user while the link to this information is stored in an asset. Note that the user remains the manager of the asset and consequently he/she can recall it. 
+
+* The asset is finally transferred to a CMO, that will behave accordingly in a given territory
+
+### To update a row in the IPI
+
+* The user revokes the asset to assign it to a different CMO
+* The user can modify the off-chain information and possibly sign the information with its private key
+
+### To view the IPI
+Access the assets of the CMOs or of the users
+
+
 #### Strengths
 
 * It models the reality

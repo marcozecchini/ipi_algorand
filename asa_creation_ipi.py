@@ -55,7 +55,6 @@ def create_ipi_name(account, private_key):
     last_round = params["lastRound"]
     fee = params["fee"]
 
-    input("Press smt when you have fill {0}".format(account))
 
     # create transaction
     # Configure fields for creating the asset.
@@ -94,7 +93,7 @@ def create_ipi_name(account, private_key):
     return asset_id
 
 # create ipi record          
-def create_succint_ipi_record(IPI_id, cc, rl, rh, from_date, to_date, share, territories, account, private_key) : # how do I pass territory string
+def create_succint_ipi_record(IPI_id, cc, rl, rh, from_date, to_date, share, territories, account, private_key) : 
 
     # get suggested parameters
     params = acl.suggested_params()
@@ -102,8 +101,6 @@ def create_succint_ipi_record(IPI_id, cc, rl, rh, from_date, to_date, share, ter
     gh = params["genesishashb64"]
     last_round = params["lastRound"]
     fee = params["fee"]
-
-    input("Press smt when you have fill {0}".format(account))
 
     # create transaction2
     # Configure fields for creating the asset.
@@ -150,6 +147,54 @@ def create_succint_ipi_record(IPI_id, cc, rl, rh, from_date, to_date, share, ter
     # print(json.dumps(asset_info, indent=4))
     return asset_id
 
+def create_external_ipi_record(account, private_key, url):
+    # get suggested parameters
+    params = acl.suggested_params()
+    gen = params["genesisID"]
+    gh = params["genesishashb64"]
+    last_round = params["lastRound"]
+    fee = params["fee"]
+
+    # create transaction2
+    # Configure fields for creating the asset.
+    data = {
+        "sender": account,
+        "fee": fee,
+        "first": last_round,
+        "last": last_round+100,
+        "gh": gh,
+        "total": 1, 
+        "decimals": 0,
+        "default_frozen": False,
+        "unit_name": "IPIs", # CC, RL, RH
+        "asset_name": "IPI_external", # IP - base/name number?  - 32 bytes
+        "manager": account,
+        "reserve": account,
+        "freeze": account,
+        "clawback": account,
+        "url" : "https://bit.ly/37hQKQa",
+        "flat_fee": True
+    }
+
+    txn = transaction.AssetConfigTxn(**data)
+
+    # sign transaction
+    stxn = txn.sign(private_key)
+
+    # send them over network
+    sent = acl.send_transaction(stxn)
+    # print txid
+    # print(sent)
+
+    # wait for confirmation
+    txinfo = wait_for_confirmation( acl, sent) 
+    asset_id = txinfo["txresults"]["createdasset"]
+
+    asset_info = acl.asset_info(asset_id)
+    # print(json.dumps(asset_info, indent=4))
+    return asset_id
+
+
 def transfer_ipi(asset_id, to_account, account, private_key, opt_in=False) : # how do I pass territory string
 
     # get suggested parameters
@@ -158,8 +203,6 @@ def transfer_ipi(asset_id, to_account, account, private_key, opt_in=False) : # h
     gh = params["genesishashb64"]
     last_round = params["lastRound"]
     fee = params["fee"]
-
-    input("Press smt when you have fill {0}".format(account))
 
     # create transaction2
     # Configure fields for creating the asset.
@@ -199,15 +242,20 @@ private_key, account = account_algosdk.generate_account()
 print("Rh address: {}".format(account))
 print("Rh passphrase: {}".format(mnemonic.from_private_key(private_key)))
 
+
+input("Press smt when you have filled the accounts")
+
 # create IPI names & identifier
 asset_id_ipi = create_ipi_name(account, private_key)
 asset_info_ipi = acl.asset_info(asset_id_ipi)
 # print(json.dumps(asset_info_ipi, indent=4))
 
-# create ipi record
-ipi_record_id = create_succint_ipi_record(asset_info_ipi["unitname"], cclasses_list[0], roles_list[0], rights_list[0], "2000", "2050", 100, ["WO"], account, private_key)
+# create ipi record. Two types: 1) external 2) on-chain
+ipi_record_id = create_external_ipi_record(account, private_key, "https://bit.ly/37hQKQa")
 ipi_record_id2 = create_succint_ipi_record(asset_info_ipi["unitname"], cclasses_list[1], roles_list[1], rights_list[1], "2000", "2050", 100, ["IT"], account, private_key)
 
+
+print("Here is how IPI records look like in chain ...")
 print_ipi_on_chain_structure(acl, account, asset_id_ipi)
 
 # record 1

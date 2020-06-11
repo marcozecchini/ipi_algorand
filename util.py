@@ -23,7 +23,6 @@ def print_ipi_on_chain_structure(acl, account, asset_id_ipi): # todo modifica co
 
 def get_ipi_records(acl, cmo_list, account): 
     account_info = acl.account_info(account)
-    print(json.dumps(account_info, indent=4))
     asset_ipi = {}
     asset_ipi_id = 0
     res = []
@@ -33,6 +32,10 @@ def get_ipi_records(acl, cmo_list, account):
         if "IPI:" in record["assetname"]:
             asset_ipi = record
             asset_ipi_id = int(asset)
+            continue
+        if "IPI_external" in record["assetname"]:
+            temp = {"External IPIs" : record["url"]}
+            res.append(temp)
             continue
         if "metadatahash" in record.keys():
             char_vector = base64.b64decode(record["metadatahash"]).decode()
@@ -61,8 +64,15 @@ def get_ipi_records(acl, cmo_list, account):
 
 def print_ipi_records(acl, cmo_list, account):
     res = get_ipi_records(acl, cmo_list, account)
+    print("\n---------------------------------")
+    print("IPI records of account", account)
+    print("---------------------------------")
+
     for elem in res:
         print(json.dumps(elem, indent=4))
+
+    print("---------------------------------")
+
 
 def get_collecting_society(acl, cmo_list, asset_id):
     res = []
