@@ -73,6 +73,34 @@ Then, I create one asset per record IPI that I combine with the asset info field
 
 x = (x0, x1, ..., x192) where xi ={1 if territory i is involved in the IPI record; 0 otherwise} 
 
+It follows the snippet of code where the ASA parameters are specified:
+```
+data = {
+        "sender": account,
+        "fee": fee,
+        "first": last_round,
+        "last": last_round+100,
+        "gh": gh,
+        "total": int(( 1 / share ) * 100), # (1 / share)*100 = total 
+        "decimals": 0,
+        "default_frozen": False,
+        "unit_name": cc+rl+rh, # CC, RL, RH
+        "asset_name": IPI_id, # IP - base/name number?  - 32 bytes
+        "manager": account,
+        "reserve": account,
+        "freeze": account,
+        "clawback": account,
+        "url" : from_date+"-"+to_date,
+        "metadata_hash" : countrytovector(country_list, territories).encode(),
+        "flat_fee": True
+    }
+
+    if "WO" in territories: 
+        del data["metadata_hash"]
+    if "ZW" in territories:
+        data["url"] = data["url"] + "-ZW"
+```
+
 
 ### To insert a new row in the IPI
 
