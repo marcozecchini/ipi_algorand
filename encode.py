@@ -120,6 +120,11 @@ def frombits(bits, length=8):
     return ''.join(chars)
 
 def frombitsto64(bits, length=6):
+    '''
+    Since the metadatahash field will be converted into 32-byte-length base64 string if the hash is 32-byte-length ascii string
+    the conversion will exceed the 32-byte size.. hence, we should think that each byte can represent 6 bits at most ...
+    For this reason 6 * 32 (length) = 192 vector size
+    '''
     chars = []
 
     for b in range(int(len(bits) / length)):

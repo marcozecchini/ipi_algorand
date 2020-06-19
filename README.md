@@ -56,14 +56,14 @@ Access the assets of the CMOs or of the users
 
 -------------------------------------------
 
-## Alternative solution based on asset
+## Alternative solution based on asset (Hybrid solution with Note Field one)
 Using all the info fields of an Asset you can have all the information you need. 
 
 Note that these are the length of the Asset info fields:
 * length(unit_name) <=15 bytes
 * length(asset_name) <= 32 bytes 
 * length(url) <= 32 bytes 
-* length(metadata_hash) == 32 bytes (fixed)
+* length(metadata_hash) == 32 base64 bytes(fixed)
 
 Instead of representing a dense table repeating *IP_Name, IP_base_number, IP_name_number, Name Type* every row that doesn’t change we use a single Asset for representing them.
 
