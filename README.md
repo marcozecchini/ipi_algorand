@@ -22,7 +22,7 @@ record = {
 }
 ```
 
-## Assets based from Right holder to CMO
+## 1. Assets based from Right holder to CMO
 
 ### To insert a new row in the IPI
 
@@ -56,7 +56,7 @@ Access the assets of the CMOs or of the users
 
 -------------------------------------------
 
-## Alternative solution based on asset (Hybrid solution with Note Field one)
+## 2. Alternative solution based on asset (Encoding the IPI record)
 Using all the info fields of an Asset you can have all the information you need. 
 
 Note that these are the length of the Asset info fields:
