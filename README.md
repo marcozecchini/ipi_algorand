@@ -65,9 +65,9 @@ Note that these are the length of the Asset info fields:
 * length(url) <= 32 bytes 
 * length(metadata_hash) == 32 base64 bytes(fixed)
 
-Instead of representing a dense table repeating *IP_Name, IP_base_number, IP_name_number, Name Type* every row that doesn’t change we use a single Asset for representing them.
+Instead of representing a dense table repeating *IP_Name, IP_base_number, IP_name_number, Name Type* every row (since they don’t change) we use a single Asset for representing them.
 
-Then, I create one asset per record IPI that I combine with the asset info fields described previously. For instance, unit_name/asset_name = {CCRLRH} , url = {date interval}, metadata_hash = {binary vector with all the territories}, total = ( 1 / Share ) * 100. 
+Then, I create one asset per record IPI that I combine with the asset info fields described previously. For instance, unit_name/asset_name = {CCRLRH} , url = {date interval}, metadata_hash = {binary vector with all the territories}, total = ( 1 / Share ) * 100 (*maybe total it's not correct but to give the idea*). 
 
  In the metadata_hash we can represent all world countries (~ 192) with the following vector:
 
